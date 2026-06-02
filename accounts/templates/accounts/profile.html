@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - Apna{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center my-4">
+        <!-- Sidebar Profile Card -->
+        <div class="col-lg-4 mb-4">
+            <div class="glass-card text-center">
+                <div class="position-relative d-inline-block mb-3">
+                    <div class="avatar-lg mx-auto" style="width: 120px; height: 120px;">
+                        {% if user.profile_picture %}
+                            <img src="{{ user.profile_picture.url }}" alt="Profile" class="rounded-circle w-100 h-100 object-fit-cover border border-3 border-primary shadow">
+                        {% else %}
+                            <div class="rounded-circle w-100 h-100 bg-primary text-white d-flex align-items-center justify-content-center fw-bold shadow" style="font-size: 3rem;">
+                                {{ user.email|slice:":1"|upper }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <h4 class="fw-bold mb-1">{{ user.first_name }} {{ user.last_name }}</h4>
+                <p class="text-secondary small mb-3">{{ user.email }}</p>
+                <div class="d-flex justify-content-center gap-2 mb-3">
+                    {% if user.is_candidate %}
+                        <span class="badge bg-primary rounded-pill px-3 py-1">Candidate</span>
+                    {% endif %}
+                    {% if user.is_employer %}
+                        <span class="badge bg-success rounded-pill px-3 py-1">Employer</span>
+                    {% endif %}
+                </div>
+                <hr>
+                <div class="text-start">
+                    <p class="mb-2"><i class="bi bi-geo-alt-fill text-primary me-2"></i> <strong>Location:</strong> {{ user.location|default:"Not specified" }}</p>
+                    <p class="mb-2"><i class="bi bi-briefcase-fill text-primary me-2"></i> <strong>Domain:</strong> {{ user.domain|default:"Not specified" }}</p>
+                    {% if user.is_candidate %}
+                        <p class="mb-0"><i class="bi bi-clock-history text-primary me-2"></i> <strong>Experience:</strong> {{ user.experience_years }} Year{{ user.experience_years|pluralize }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Details Edit Form -->
+        <div class="col-lg-8">
+            <div class="glass-card-static">
+                <h3 class="fw-bold mb-4"><i class="bi bi-person-gear text-primary me-2"></i>Edit Profile Details</h3>
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="id_first_name" class="form-label fw-semibold">First Name</label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                                <div class="text-danger small mt-1">{{ form.first_name.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="id_last_name" class="form-label fw-semibold">Last Name</label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                                <div class="text-danger small mt-1">{{ form.last_name.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="id_domain" class="form-label fw-semibold">Domain / Industry</label>
+                            {{ form.domain }}
+                            {% if form.domain.errors %}
+                                <div class="text-danger small mt-1">{{ form.domain.errors|join:", " }}</div>
+                            {% endif %}
+                            <small class="text-muted small">e.g. IT, Finance, Marketing, Healthcare</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="id_location" class="form-label fw-semibold">Location</label>
+                            {{ form.location }}
+                            {% if form.location.errors %}
+                                <div class="text-danger small mt-1">{{ form.location.errors|join:", " }}</div>
+                            {% endif %}
+                            <small class="text-muted small">e.g. Bangalore, Mumbai, Remote</small>
+                        </div>
+                    </div>
+                    {% if user.is_candidate %}
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="id_experience_years" class="form-label fw-semibold">Years of Experience</label>
+                                {{ form.experience_years }}
+                                {% if form.experience_years.errors %}
+                                    <div class="text-danger small mt-1">{{ form.experience_years.errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="id_profile_picture" class="form-label fw-semibold">Profile Picture</label>
+                                {{ form.profile_picture }}
+                                {% if form.profile_picture.errors %}
+                                    <div class="text-danger small mt-1">{{ form.profile_picture.errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label for="id_resume_file" class="form-label fw-semibold">Resume File (PDF, DOC, DOCX)</label>
+                                {{ form.resume_file }}
+                                {% if form.resume_file.errors %}
+                                    <div class="text-danger small mt-1">{{ form.resume_file.errors|join:", " }}</div>
+                                {% endif %}
+                                {% if user.resume_file %}
+                                    <div class="mt-2 text-success small">
+                                        <i class="bi bi-file-earmark-check-fill me-1"></i> Current Resume: 
+                                        <a href="{{ user.resume_file.url }}" class="fw-bold text-success text-decoration-underline" target="_blank">View / Download Current Resume</a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_skills" class="form-label fw-semibold">Skills</label>
+                            {{ form.skills }}
+                            {% if form.skills.errors %}
+                                <div class="text-danger small mt-1">{{ form.skills.errors|join:", " }}</div>
+                            {% endif %}
+                            <small class="text-muted small d-block mt-1">Comma-separated list (e.g. Python, Django, JavaScript, SQL)</small>
+                            {% if user.get_skills_list %}
+                                <div class="mt-2">
+                                    {% for skill in user.get_skills_list %}
+                                        <span class="badge-skill">{{ skill }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="id_resume_summary" class="form-label fw-semibold">Resume / Profile Summary</label>
+                            {{ form.resume_summary }}
+                            {% if form.resume_summary.errors %}
+                                <div class="text-danger small mt-1">{{ form.resume_summary.errors|join:", " }}</div>
+                            {% endif %}
+                            <small class="text-muted small">Describe your background, projects, or career achievements.</small>
+                        </div>
+                    {% else %}
+                        <div class="mb-4">
+                            <label for="id_profile_picture" class="form-label fw-semibold">Company Logo / Profile Picture</label>
+                            {{ form.profile_picture }}
+                            {% if form.profile_picture.errors %}
+                                <div class="text-danger small mt-1">{{ form.profile_picture.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary px-4 py-2 rounded-pill shadow-sm">
+                            <i class="bi bi-check-circle-fill me-2"></i>Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

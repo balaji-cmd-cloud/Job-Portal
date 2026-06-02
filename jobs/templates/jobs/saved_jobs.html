@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Saved Jobs - Apna{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold"><i class="bi bi-bookmark-heart text-primary me-2"></i>Saved Jobs</h2>
+            <p class="text-secondary small">Review roles you have pinned to apply later.</p>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        {% if saved_jobs %}
+            {% for item in saved_jobs %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="glass-card h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="fw-bold mb-0 text-truncate" style="max-width: 80%;">
+                                    <a href="{% url 'job_detail' item.job.id %}" class="text-primary text-decoration-none">{{ item.job.title }}</a>
+                                </h5>
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded px-2 py-1 small" style="font-size: 0.7rem;">
+                                    {{ item.job.job_type }}
+                                </span>
+                            </div>
+                            <h6 class="text-secondary fw-semibold mb-3">{{ item.job.company_name }}</h6>
+                            
+                            <div class="mb-3">
+                                <p class="small text-secondary mb-1"><i class="bi bi-geo-alt me-1"></i> {{ item.job.location }}</p>
+                                <p class="small text-secondary mb-1"><i class="bi bi-cash-stack me-1"></i> {{ item.job.salary_range }}</p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                {% for skill in item.job.get_skills_list|slice:":3" %}
+                                    <span class="badge-skill">{{ skill }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2 mt-3 pt-3 border-top">
+                            <a href="{% url 'job_detail' item.job.id %}" class="btn btn-outline-primary btn-sm flex-grow-1 rounded-pill">View Details</a>
+                            <a href="{% url 'save_job' item.job.id %}" class="btn btn-danger btn-sm px-3 rounded-pill" title="Unsave">
+                                <i class="bi bi-bookmark-x-fill"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="glass-card text-center py-5">
+                    <i class="bi bi-bookmark-dash text-secondary mb-3" style="font-size: 3rem;"></i>
+                    <h5 class="fw-bold">No saved jobs yet</h5>
+                    <p class="text-secondary small">Pin jobs from search directories to keep track of interesting opportunities.</p>
+                    <a href="{% url 'job_list' %}" class="btn btn-primary rounded-pill btn-sm px-4">Browse Listings</a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

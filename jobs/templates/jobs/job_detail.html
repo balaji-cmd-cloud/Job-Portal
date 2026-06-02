@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ job.title }} - {{ job.company_name }} - Apna{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row g-4">
+        <!-- Main Job Description -->
+        <div class="col-lg-8">
+            <div class="glass-card-static mb-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h2 class="fw-bold mb-1">{{ job.title }}</h2>
+                        <h5 class="text-secondary fw-semibold mb-0">{{ job.company_name }}</h5>
+                    </div>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1">
+                        {{ job.job_type }}
+                    </span>
+                </div>
+
+                <div class="row g-3 py-3 my-2 border-top border-bottom">
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-geo-alt-fill text-primary" style="font-size: 1.25rem;"></i>
+                            <div>
+                                <span class="text-muted d-block small">Location</span>
+                                <strong class="small">{{ job.location }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-cash-stack text-primary" style="font-size: 1.25rem;"></i>
+                            <div>
+                                <span class="text-muted d-block small">Salary</span>
+                                <strong class="small">{{ job.salary_range }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-mortarboard-fill text-primary" style="font-size: 1.25rem;"></i>
+                            <div>
+                                <span class="text-muted d-block small">Experience</span>
+                                <strong class="small">{{ job.experience_required }} Year{{ job.experience_required|pluralize }} Required</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h5 class="fw-bold mb-2">Job Description</h5>
+                    <div class="text-secondary" style="line-height: 1.6; white-space: pre-line;">
+                        {{ job.description }}
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h5 class="fw-bold mb-2">Required Skills</h5>
+                    <div>
+                        {% for skill in job.get_skills_list %}
+                            <span class="badge-skill" style="font-size: 0.85rem; padding: 0.5rem 1rem;">{{ skill }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="d-flex gap-3 pt-3 border-top">
+                    {% if user.is_authenticated %}
+                        {% if user.is_candidate %}
+                            {% if has_applied %}
+                                <button class="btn btn-secondary px-4 py-2 rounded-pill flex-grow-1" disabled>
+                                    <i class="bi bi-check-circle-fill me-2"></i>Applied
+                                </button>
+                            {% else %}
+                                <a href="{% url 'apply_job' job.id %}" class="btn btn-primary px-4 py-2 rounded-pill flex-grow-1 shadow">
+                                    <i class="bi bi-send-fill me-2"></i>Apply Now
+                                </a>
+                            {% endif %}
+                            
+                            {% if has_saved %}
+                                <a href="{% url 'save_job' job.id %}" class="btn btn-primary px-4 py-2 rounded-pill">
+                                    <i class="bi bi-bookmark-fill me-2"></i>Saved
+                                </a>
+                            {% else %}
+                                <a href="{% url 'save_job' job.id %}" class="btn btn-outline-primary px-4 py-2 rounded-pill">
+                                    <i class="bi bi-bookmark me-2"></i>Save Job
+                                </a>
+                            {% endif %}
+                        {% else %}
+                            <button class="btn btn-outline-secondary px-4 py-2 rounded-pill flex-grow-1" disabled>
+                                Logged in as Employer
+                            </button>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary px-4 py-2 rounded-pill flex-grow-1 shadow">
+                            Log in to Apply
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Related Jobs -->
+        <div class="col-lg-4">
+            <h4 class="fw-bold mb-3"><i class="bi bi-journal-text text-primary me-2"></i>Similar Jobs</h4>
+            
+            {% if related_jobs %}
+                <div class="d-flex flex-column gap-3">
+                    {% for rjob in related_jobs %}
+                        <div class="glass-card">
+                            <h6 class="fw-bold mb-1 text-truncate">
+                                <a href="{% url 'job_detail' rjob.id %}" class="text-primary text-decoration-none">{{ rjob.title }}</a>
+                            </h6>
+                            <p class="text-secondary small mb-2">{{ rjob.company_name }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="small text-muted"><i class="bi bi-geo-alt me-1"></i>{{ rjob.location }}</span>
+                                <span class="badge bg-secondary-subtle text-secondary small">{{ rjob.job_type }}</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="glass-card text-center py-4">
+                    <p class="text-muted small mb-0">No matching similar jobs found.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Apna{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Header / Search Section -->
+    <div class="hero-section text-center mb-4">
+        <h1 class="fw-extrabold mb-2 text-gradient">Discover Your Next Dream Job</h1>
+        <p class="text-secondary col-lg-8 mx-auto mb-4">Search from thousands of active job opportunities or let our AI Recommendation Engine suggest the best roles for you.</p>
+        
+        <!-- Search bar -->
+        <form action="{% url 'job_list' %}" method="GET" class="hero-search-bar">
+            <div class="row g-2">
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-0"><i class="bi bi-search text-primary"></i></span>
+                        <input type="text" name="q" class="form-control border-0 bg-transparent" placeholder="Job title, keywords, or company...">
+                    </div>
+                </div>
+                <div class="col-md-3 border-start-md">
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-0"><i class="bi bi-geo-alt text-primary"></i></span>
+                        <input type="text" name="location" class="form-control border-0 bg-transparent" placeholder="Location or Remote...">
+                    </div>
+                </div>
+                <div class="col-md-2 border-start-md">
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-0"><i class="bi bi-briefcase text-primary"></i></span>
+                        <input type="text" name="domain" class="form-control border-0 bg-transparent" placeholder="Domain (e.g. IT)">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100 py-2 rounded-3 shadow">
+                        Search Jobs
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Panel: Recommended Jobs -->
+        <div class="col-lg-8">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="d-flex align-items-center flex-wrap gap-2">
+                    <h3 class="fw-bold mb-0"><i class="bi bi-stars text-primary me-2 animate-pulse"></i>AI Job Recommendations</h3>
+                    {% if user.resume_file %}
+                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1 small" style="font-size: 0.75rem;">
+                            <i class="bi bi-file-earmark-check-fill me-1"></i> Based on your uploaded resume
+                        </span>
+                        {% if resume_skills or resume_domain %}
+                            <span class="text-secondary small d-block w-100 mt-1 ms-1" style="font-size: 0.8rem;">
+                                {% if resume_domain %}<strong>Parsed Domain:</strong> <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-0.5" style="font-size: 0.7rem;">{{ resume_domain }}</span>{% endif %}
+                                {% if resume_skills %} &bull; <strong>Detected Skills:</strong>
+                                    {% for rskill in resume_skills %}
+                                        <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-2 py-0.5" style="font-size: 0.7rem;">{{ rskill }}</span>
+                                    {% endfor %}
+                                {% endif %}
+                            </span>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                <a href="{% url 'job_list' %}" class="btn btn-link text-primary text-decoration-none small">View all jobs <i class="bi bi-arrow-right"></i></a>
+            </div>
+            
+            {% if recommendations %}
+                <div class="row g-3">
+                    {% for job in recommendations %}
+                        <div class="col-md-6">
+                            <div class="glass-card h-100 d-flex flex-column justify-content-between">
+                                <div>
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="fw-bold mb-0 text-truncate" style="max-width: 80%;">
+                                            <a href="{% url 'job_detail' job.id %}" class="text-primary text-decoration-none">{{ job.title }}</a>
+                                        </h5>
+                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded px-2 py-1 small" style="font-size: 0.7rem;">
+                                            {{ job.job_type }}
+                                        </span>
+                                    </div>
+                                    <h6 class="text-secondary fw-semibold mb-3">{{ job.company_name }}</h6>
+                                    
+                                    <div class="mb-3">
+                                        <span class="badge-outline me-2"><i class="bi bi-geo-alt me-1"></i>{{ job.location }}</span>
+                                        <span class="badge-outline me-2"><i class="bi bi-cash-stack me-1"></i>{{ job.salary_range }}</span>
+                                        <span class="badge-outline"><i class="bi bi-clock me-1"></i>{{ job.experience_required }} Year{{ job.experience_required|pluralize }} Exp</span>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        {% for skill in job.get_skills_list|slice:":3" %}
+                                            <span class="badge-skill">{{ skill }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2 mt-3 pt-3 border-top">
+                                    <a href="{% url 'job_detail' job.id %}" class="btn btn-outline-primary btn-sm flex-grow-1 rounded-pill">Details</a>
+                                    <button class="btn btn-outline-primary btn-sm px-3 rounded-pill save-job-btn" data-job-id="{{ job.id }}">
+                                        <i class="bi bi-bookmark"></i> Save
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="glass-card text-center py-5">
+                    <i class="bi bi-emoji-smile text-secondary" style="font-size: 3rem;"></i>
+                    <h5 class="fw-bold mt-3">No custom recommendations yet</h5>
+                    <p class="text-secondary small col-md-8 mx-auto">Update your profile with your domain and skills list to let our AI recommendation engine find the best matched career paths for you.</p>
+                    <a href="{% url 'profile' %}" class="btn btn-primary rounded-pill btn-sm px-4">Edit Profile</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar Panel: Profile details & stats -->
+        <div class="col-lg-4">
+            <!-- Profile completion card -->
+            <div class="glass-card mb-4">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="avatar-md">
+                        {% if user.profile_picture %}
+                            <img src="{{ user.profile_picture.url }}" alt="Profile" class="rounded-circle" style="width: 54px; height: 54px; object-fit: cover;">
+                        {% else %}
+                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 54px; height: 54px; font-size: 1.4rem;">
+                                {{ user.email|slice:":1"|upper }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-0">{{ user.first_name|default:user.email }}</h5>
+                        <p class="text-secondary small mb-0">{{ user.domain|default:"Domain not specified" }}</p>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span class="text-secondary">Profile Strength</span>
+                        <span class="fw-bold text-primary">{{ profile_score }}%</span>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: {{ profile_score }}%" aria-valuenow="{{ profile_score }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+                
+                <div class="row g-2 text-center mt-3 pt-3 border-top">
+                    <div class="col-6">
+                        <h4 class="fw-bold text-primary mb-0">{{ total_applied }}</h4>
+                        <span class="text-secondary small">Applied</span>
+                    </div>
+                    <div class="col-6 border-start">
+                        <h4 class="fw-bold text-primary mb-0">{{ total_saved }}</h4>
+                        <span class="text-secondary small">Saved</span>
+                    </div>
+                </div>
+                
+                <a href="{% url 'profile' %}" class="btn btn-outline-primary w-100 mt-3 btn-sm rounded-pill">Manage Profile</a>
+            </div>
+
+            <!-- Trending Skills card -->
+            <div class="glass-card">
+                <h5 class="fw-bold mb-3"><i class="bi bi-graph-up-arrow text-primary me-2"></i>Trending Skills</h5>
+                <p class="text-secondary small mb-3">Popular skills demanded across current listings:</p>
+                <div>
+                    {% if trending_skills %}
+                        {% for skill in trending_skills %}
+                            <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-3 py-1 me-2 mb-2 d-inline-block small">
+                                <i class="bi bi-chevron-double-up text-success me-1"></i>{{ skill }}
+                            </span>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-secondary small">Check back later for skill updates.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Chatbot Widget Markup -->
+<button class="chat-toggle-btn" id="chatToggle" title="Chat with Career AI">
+    <i class="bi bi-chat-dots-fill"></i>
+</button>
+
+<div class="chat-widget-container minimized" id="chatContainer">
+    <div class="chat-header">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-robot" style="font-size: 1.2rem;"></i>
+            <span class="fw-bold">Apna Career Coach</span>
+        </div>
+        <button class="btn-close btn-close-white" id="closeChat" aria-label="Close"></button>
+    </div>
+    <div class="chat-body" id="chatBody">
+        <div class="message-bubble bot">
+            <p>Hello! I am your AI Career Coach. How can I help you today?</p>
+            <p>You can ask me to:</p>
+            <ul>
+                <li>Recommend jobs matching your skills</li>
+                <li>List trending skills</li>
+                <li>Suggest learning paths for Software Engineering or Data Science</li>
+            </ul>
+        </div>
+    </div>
+    <div class="chat-footer">
+        <form id="chatForm" class="d-flex gap-2">
+            <input type="text" id="chatInput" class="form-control form-control-sm" placeholder="Ask career AI..." autocomplete="off">
+            <button type="submit" class="btn btn-primary btn-sm px-3"><i class="bi bi-send"></i></button>
+        </form>
+    </div>
+</div>
+{% endblock %}

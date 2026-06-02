@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - Apna{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center my-5">
+        <div class="col-md-5">
+            <div class="glass-card-static">
+                <div class="text-center mb-4">
+                    <i class="bi bi-briefcase-fill brand-icon" style="font-size: 2.5rem;"></i>
+                    <h2 class="fw-bold mt-2">Welcome Back</h2>
+                    <p class="text-secondary small">Log in to search and apply for jobs powered by AI</p>
+                </div>
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="id_email" class="form-label fw-semibold">Email Address</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="text-danger small mt-1">{{ form.email.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="id_password" class="form-label fw-semibold">Password</label>
+                        {{ form.password }}
+                        {% if form.password.errors %}
+                            <div class="text-danger small mt-1">{{ form.password.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 py-2 rounded-pill shadow-sm">
+                        Log In
+                    </button>
+                </form>
+                
+                <div class="text-center mt-4">
+                    <p class="text-secondary small mb-0">Don't have an account? 
+                        <a href="{% url 'register' %}" class="fw-semibold text-primary text-decoration-none">Register here</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

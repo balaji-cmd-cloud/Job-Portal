@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Apply for {{ job.title }} - Apna{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center my-4">
+        <div class="col-md-7">
+            <div class="glass-card-static">
+                <div class="mb-4">
+                    <a href="{% url 'job_detail' job.id %}" class="text-primary text-decoration-none small"><i class="bi bi-arrow-left"></i> Back to Details</a>
+                    <h3 class="fw-bold mt-2">Confirm Job Application</h3>
+                    <p class="text-secondary small">You are applying for the position of <strong>{{ job.title }}</strong> at <strong>{{ job.company_name }}</strong>.</p>
+                </div>
+                
+                <hr class="my-4">
+                
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Profile Review Snapshot</label>
+                        <div class="p-3 bg-body-tertiary rounded-3 small">
+                            <p class="mb-2"><strong>Name:</strong> {{ user.first_name }} {{ user.last_name }}</p>
+                            <p class="mb-2"><strong>Email:</strong> {{ user.email }}</p>
+                            <p class="mb-2"><strong>Location:</strong> {{ user.location|default:"Not specified" }}</p>
+                            <p class="mb-2"><strong>Skills:</strong> {{ user.skills|default:"Not specified" }}</p>
+                            <p class="mb-0"><strong>Experience:</strong> {{ user.experience_years }} Year{{ user.experience_years|pluralize }}</p>
+                        </div>
+                        <small class="text-muted d-block mt-2">Note: Recruiting teams will see this profile data along with your submission. You can update this on your <a href="{% url 'profile' %}" target="_blank">Profile page</a>.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        {% if not user.resume_file %}
+                            <label for="resume_file" class="form-label fw-semibold">Upload Resume (PDF, DOC, DOCX) <span class="text-danger">*</span></label>
+                            <input type="file" id="resume_file" name="resume_file" class="form-control" accept=".pdf,.doc,.docx" required>
+                            <small class="text-danger small d-block mt-1">You must attach a resume to submit your application.</small>
+                        {% else %}
+                            <label for="resume_file" class="form-label fw-semibold">Upload a New Resume (Optional)</label>
+                            <input type="file" id="resume_file" name="resume_file" class="form-control" accept=".pdf,.doc,.docx">
+                            <div class="mt-2 text-success small">
+                                <i class="bi bi-file-earmark-check-fill me-1"></i> Current Profile Resume: 
+                                <a href="{{ user.resume_file.url }}" class="fw-bold text-success text-decoration-underline" target="_blank">View Current Resume</a>
+                            </div>
+                            <small class="text-muted small d-block mt-1">Leave empty to use your current profile resume, or upload a new one to replace it.</small>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="cover_letter" class="form-label fw-semibold">Cover Letter / Pitch (Optional)</label>
+                        <textarea id="cover_letter" name="cover_letter" class="form-control" rows="5" placeholder="Explain why you are a good fit for this role..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 py-2 rounded-pill shadow-sm">
+                        Submit Application
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

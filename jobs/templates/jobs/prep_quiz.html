@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+
+{% block title %}Quiz: {{ domain_display }} - Apna{% endblock %}
+
+{% block extra_css %}
+<style>
+    .choice-label {
+        display: block;
+        padding: 0.85rem 1.25rem;
+        background-color: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+    }
+    [data-theme="light"] .choice-label {
+        background-color: #ffffff;
+        color: #1e293b;
+    }
+    .choice-label:hover {
+        border-color: var(--primary-color);
+        background-color: rgba(13, 110, 253, 0.08);
+    }
+    .choice-input:checked + .choice-label {
+        border-color: var(--primary-color);
+        background-color: rgba(13, 110, 253, 0.15);
+        font-weight: 600;
+    }
+    .choice-correct {
+        border-color: var(--bs-success) !important;
+        background-color: rgba(var(--bs-success-rgb), 0.15) !important;
+        color: var(--bs-success-text-emphasis) !important;
+    }
+    .choice-wrong {
+        border-color: var(--bs-danger) !important;
+        background-color: rgba(var(--bs-danger-rgb), 0.15) !important;
+        color: var(--bs-danger-text-emphasis) !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="mb-4">
+        <a href="{% url 'prep_landing' %}" class="text-primary text-decoration-none small">
+            <i class="bi bi-arrow-left"></i> Back to Prep Portal
+        </a>
+        <h2 class="fw-bold mt-2">{{ domain_display }} Practice Quiz</h2>
+        <p class="text-secondary small">Test your knowledge with 5 key domain questions. Submit below for instant grading.</p>
+    </div>
+
+    <!-- Score Summary (Initially Hidden) -->
+    <div id="scoreSummary" class="glass-card mb-4 d-none">
+        <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" id="scoreBubble" style="width: 70px; height: 70px; font-size: 1.5rem;">
+                0/5
+            </div>
+            <div>
+                <h4 class="fw-bold mb-1" id="scoreTitle">Quiz Completed!</h4>
+                <p class="text-secondary small mb-0" id="scoreDescription">Review your correct answers and explanations below.</p>
+            </div>
+            <div class="ms-auto">
+                <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="window.location.reload();">
+                    <i class="bi bi-arrow-clockwise"></i> Try Again
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quiz Form -->
+    <form id="quizForm">
+        <div class="d-flex flex-column gap-4">
+            {% for q in questions %}
+                <div class="glass-card-static question-block" data-question-id="{{ q.id }}" data-correct-index="{{ q.correct_index }}">
+                    <div class="d-flex align-items-start gap-2 mb-3">
+                        <span class="badge bg-primary rounded-pill px-2.5 py-1">Q{{ forloop.counter }}</span>
+                        <h5 class="fw-bold mb-0 ms-1" style="line-height: 1.4;">{{ q.question }}</h5>
+                    </div>
+
+                    <!-- Choices -->
+                    <div class="row g-2 mb-3">
+                        {% for choice in q.choices %}
+                            <div class="col-12">
+                                <input type="radio" name="q-{{ q.id }}" id="q-{{ q.id }}-c-{{ forloop.counter0 }}" value="{{ forloop.counter0 }}" class="choice-input d-none" required>
+                                <label for="q-{{ q.id }}-c-{{ forloop.counter0 }}" class="choice-label">
+                                    <span class="me-2 fw-semibold">
+                                        {% if forloop.counter == 1 %}A.
+                                        {% elif forloop.counter == 2 %}B.
+                                        {% elif forloop.counter == 3 %}C.
+                                        {% else %}D.{% endif %}
+                                    </span> {{ choice }}
+                                    <span class="float-end icon-indicator d-none"></span>
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Explanation (Initially Hidden) -->
+                    <div class="explanation-box d-none p-3 bg-body-tertiary rounded-3 small border-start border-3 border-info mt-3">
+                        <h6 class="fw-bold mb-1 text-info"><i class="bi bi-info-circle-fill me-1"></i> Explanation:</h6>
+                        <p class="mb-0 text-secondary">{{ q.explanation }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="text-center mt-4 mb-5">
+            <button type="submit" id="submitBtn" class="btn btn-primary px-5 py-3 rounded-pill shadow-sm">
+                <i class="bi bi-check-all me-1"></i> Submit Answers
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('quizForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    let score = 0;
+    const blocks = document.querySelectorAll('.question-block');
+    const total = blocks.length;
+
+    blocks.forEach(block => {
+        const correctIndex = parseInt(block.getAttribute('data-correct-index'));
+        const qId = block.getAttribute('data-question-id');
+        const selectedRadio = block.querySelector(`input[name="q-${qId}"]:checked`);
+        
+        // Find all labels in this block
+        const labels = block.querySelectorAll('.choice-label');
+        
+        // Remove existing indicator classes
+        labels.forEach((label, idx) => {
+            label.classList.remove('choice-correct', 'choice-wrong');
+            const icon = label.querySelector('.icon-indicator');
+            icon.className = 'float-end icon-indicator d-none';
+            
+            // Mark correct answer anyway
+            if (idx === correctIndex) {
+                label.classList.add('choice-correct');
+                icon.className = 'float-end icon-indicator text-success';
+                icon.innerHTML = '<i class="bi bi-check-circle-fill"></i>';
+            }
+        });
+
+        if (selectedRadio) {
+            const selectedIndex = parseInt(selectedRadio.value);
+            const selectedLabel = block.querySelector(`label[for="q-${qId}-c-${selectedIndex}"]`);
+            const selectedIcon = selectedLabel.querySelector('.icon-indicator');
+
+            if (selectedIndex === correctIndex) {
+                score++;
+            } else {
+                selectedLabel.classList.add('choice-wrong');
+                selectedIcon.className = 'float-end icon-indicator text-danger';
+                selectedIcon.innerHTML = '<i class="bi bi-x-circle-fill"></i>';
+            }
+        }
+
+        // Show explanation
+        const expBox = block.querySelector('.explanation-box');
+        expBox.classList.remove('d-none');
+    });
+
+    // Disable all inputs after submission
+    document.querySelectorAll('.choice-input').forEach(input => {
+        input.disabled = true;
+    });
+
+    // Update Score Bubble
+    document.getElementById('scoreBubble').innerText = `${score}/${total}`;
+    
+    // Choose custom feedback message
+    let title = "Practice Completed!";
+    let desc = "Review the concepts and answers below to build your expertise.";
+    if (score === total) {
+        title = "Perfect Score! 🌟";
+        desc = "Incredible job! You answered all questions correctly. You are fully ready for your interviews!";
+    } else if (score >= 3) {
+        title = "Great Job! 👍";
+        desc = "You scored well! Brush up on the explanations below to get a perfect score next time.";
+    }
+
+    document.getElementById('scoreTitle').innerText = title;
+    document.getElementById('scoreDescription').innerText = desc;
+
+    // Show score container and scroll to top
+    const summary = document.getElementById('scoreSummary');
+    summary.classList.remove('d-none');
+    summary.scrollIntoView({ behavior: 'smooth', block: 'end' });
+
+    // Hide submit button
+    document.getElementById('submitBtn').classList.add('d-none');
+});
+</script>
+{% endblock %}

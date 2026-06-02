@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+
+{% block title %}Search Jobs - Apna{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold"><i class="bi bi-search text-primary me-2"></i>Job Listings</h2>
+            <p class="text-secondary small">Browse open roles, apply directly, or save roles for later.</p>
+        </div>
+    </div>
+
+    <!-- Filter Form -->
+    <div class="glass-card mb-4">
+        <form method="GET" action="{% url 'job_list' %}" class="row g-3">
+            <div class="col-md-5">
+                <label for="search-input" class="form-label fw-semibold small">Keyword Search</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-transparent border-0 pe-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" id="search-input" name="q" value="{{ query }}" class="form-control border-0 bg-transparent" placeholder="Title, company, or skills...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label for="location-input" class="form-label fw-semibold small">Location</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-transparent border-0 pe-0"><i class="bi bi-geo-alt text-muted"></i></span>
+                    <input type="text" id="location-input" name="location" value="{{ location }}" class="form-control border-0 bg-transparent" placeholder="e.g. Bangalore, Remote...">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <label for="domain-input" class="form-label fw-semibold small">Domain</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-transparent border-0 pe-0"><i class="bi bi-briefcase text-muted"></i></span>
+                    <input type="text" id="domain-input" name="domain" value="{{ domain }}" class="form-control border-0 bg-transparent" placeholder="e.g. IT, Finance...">
+                </div>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100 py-2">
+                    Apply Filters
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Results Info / Fallback Alert -->
+    {% if is_fallback %}
+        <div class="alert alert-info custom-alert border-info-subtle bg-info-subtle text-info-emphasis d-flex align-items-center mb-4" role="alert">
+            <i class="bi bi-info-circle-fill me-2 fs-5"></i>
+            <div>
+                No exact matches found for your search criteria. Showing related jobs based on your filters.
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Results -->
+    <div class="row g-3">
+        {% if page_obj %}
+            {% for job in page_obj %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="glass-card h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="fw-bold mb-0 text-truncate" style="max-width: 80%;">
+                                    <a href="{% url 'job_detail' job.id %}" class="text-primary text-decoration-none">{{ job.title }}</a>
+                                </h5>
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded px-2 py-1 small" style="font-size: 0.7rem;">
+                                    {{ job.job_type }}
+                                </span>
+                            </div>
+                            <h6 class="text-secondary fw-semibold mb-3">{{ job.company_name }}</h6>
+                            
+                            <div class="mb-3">
+                                <p class="small text-secondary mb-1"><i class="bi bi-geo-alt me-1"></i> {{ job.location }}</p>
+                                <p class="small text-secondary mb-1"><i class="bi bi-cash-stack me-1"></i> {{ job.salary_range }}</p>
+                                <p class="small text-secondary mb-0"><i class="bi bi-clock me-1"></i> {{ job.experience_required }} Year{{ job.experience_required|pluralize }} Experience</p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                {% for skill in job.get_skills_list|slice:":3" %}
+                                    <span class="badge-skill">{{ skill }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2 mt-3 pt-3 border-top">
+                            <a href="{% url 'job_detail' job.id %}" class="btn btn-outline-primary btn-sm flex-grow-1 rounded-pill">View Details</a>
+                            {% if user.is_authenticated %}
+                                {% if user.is_candidate %}
+                                    {% if job.id in applied_job_ids %}
+                                        <button class="btn btn-secondary btn-sm px-3 rounded-pill" disabled>
+                                            <i class="bi bi-check-circle-fill me-1"></i>Applied
+                                        </button>
+                                    {% else %}
+                                        <a href="{% url 'apply_job' job.id %}" class="btn btn-primary btn-sm px-3 rounded-pill">
+                                            Apply Now
+                                        </a>
+                                    {% endif %}
+                                    
+                                    <button class="btn btn-outline-primary btn-sm px-3 rounded-pill save-job-btn" data-job-id="{{ job.id }}">
+                                        {% if job.id in saved_job_ids %}
+                                            <i class="bi bi-bookmark-fill"></i>
+                                        {% else %}
+                                            <i class="bi bi-bookmark"></i>
+                                        {% endif %}
+                                    </button>
+                                {% endif %}
+                            {% else %}
+                                <a href="{% url 'login' %}?next={% url 'apply_job' job.id %}" class="btn btn-primary btn-sm px-3 rounded-pill">
+                                    Apply Now
+                                </a>
+                                <a href="{% url 'login' %}" class="btn btn-outline-primary btn-sm px-3 rounded-pill">
+                                    <i class="bi bi-bookmark"></i>
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="glass-card text-center py-5">
+                    <i class="bi bi-search text-secondary mb-3" style="font-size: 3rem;"></i>
+                    <h5 class="fw-bold">No jobs matched your search criteria</h5>
+                    <p class="text-secondary small">Try adjusting your keywords or clearing filters.</p>
+                    <a href="{% url 'job_list' %}" class="btn btn-primary rounded-pill btn-sm px-4">Clear All Filters</a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+        <div class="row mt-4">
+            <div class="col-12 d-flex justify-content-center">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination custom-pagination gap-1">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link border-0 rounded-circle" href="?page={{ page_obj.previous_page_number }}{% if params %}&{{ params }}{% endif %}" aria-label="Previous">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link border-0 rounded-circle bg-primary text-white">{{ num }}</span>
+                                </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link border-0 rounded-circle text-secondary" href="?page={{ num }}{% if params %}&{{ params }}{% endif %}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link border-0 rounded-circle" href="?page={{ page_obj.next_page_number }}{% if params %}&{{ params }}{% endif %}" aria-label="Next">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

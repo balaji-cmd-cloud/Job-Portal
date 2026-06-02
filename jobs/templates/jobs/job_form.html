@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - Apna{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center my-4">
+        <div class="col-lg-8">
+            <div class="glass-card-static">
+                <!-- Header -->
+                <div class="mb-4">
+                    <a href="{% url 'employer_dashboard' %}" class="text-primary text-decoration-none small">
+                        <i class="bi bi-arrow-left"></i> Cancel and Return
+                    </a>
+                    <h2 class="fw-bold mt-2"><i class="bi bi-file-earmark-plus text-primary me-2"></i>{{ title }}</h2>
+                    <p class="text-secondary small">Provide detailed requirements and information about the role.</p>
+                </div>
+                
+                <hr class="my-4">
+
+                <!-- Form -->
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger custom-alert small mb-3">
+                            {{ form.non_field_errors|join:", " }}
+                        </div>
+                    {% endif %}
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="id_title" class="form-label fw-semibold">Job Title</label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                                <div class="text-danger small mt-1">{{ form.title.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="id_company_name" class="form-label fw-semibold">Company Name</label>
+                            {{ form.company_name }}
+                            {% if form.company_name.errors %}
+                                <div class="text-danger small mt-1">{{ form.company_name.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="id_domain" class="form-label fw-semibold">Domain / Industry Area</label>
+                            {{ form.domain }}
+                            {% if form.domain.errors %}
+                                <div class="text-danger small mt-1">{{ form.domain.errors|join:", " }}</div>
+                            {% endif %}
+                            <small class="text-muted small">e.g. IT, Finance, Marketing, Operations</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="id_location" class="form-label fw-semibold">Location</label>
+                            {{ form.location }}
+                            {% if form.location.errors %}
+                                <div class="text-danger small mt-1">{{ form.location.errors|join:", " }}</div>
+                            {% endif %}
+                            <small class="text-muted small">e.g. Bangalore, Mumbai, Remote</small>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="id_job_type" class="form-label fw-semibold">Job Type</label>
+                            {{ form.job_type }}
+                            {% if form.job_type.errors %}
+                                <div class="text-danger small mt-1">{{ form.job_type.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="id_experience_required" class="form-label fw-semibold">Experience Required (Years)</label>
+                            {{ form.experience_required }}
+                            {% if form.experience_required.errors %}
+                                <div class="text-danger small mt-1">{{ form.experience_required.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="id_salary_range" class="form-label fw-semibold">Salary Range</label>
+                            {{ form.salary_range }}
+                            {% if form.salary_range.errors %}
+                                <div class="text-danger small mt-1">{{ form.salary_range.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_skills_required" class="form-label fw-semibold">Required Skills (Comma-separated)</label>
+                        {{ form.skills_required }}
+                        {% if form.skills_required.errors %}
+                            <div class="text-danger small mt-1">{{ form.skills_required.errors|join:", " }}</div>
+                        {% endif %}
+                        <small class="text-muted small">e.g. Python, Django, React, SQL (use commas to separate tags)</small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="id_description" class="form-label fw-semibold">Full Job Description</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="text-danger small mt-1">{{ form.description.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="text-end">
+                        <a href="{% url 'employer_dashboard' %}" class="btn btn-outline-secondary px-4 py-2 rounded-pill me-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4 py-2 rounded-pill shadow-sm">
+                            <i class="bi bi-check-circle-fill me-2"></i>Publish Listing
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

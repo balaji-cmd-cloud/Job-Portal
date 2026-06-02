@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - Apna{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center my-4">
+        <div class="col-md-6">
+            <div class="glass-card-static">
+                <div class="text-center mb-4">
+                    <i class="bi bi-person-plus-fill brand-icon" style="font-size: 2.5rem;"></i>
+                    <h2 class="fw-bold mt-2">Create Account</h2>
+                    <p class="text-secondary small">Join thousands of professionals and employers</p>
+                </div>
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger custom-alert small mb-3">
+                            {{ form.non_field_errors|join:", " }}
+                        </div>
+                    {% endif %}
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="id_first_name" class="form-label fw-semibold">First Name</label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                                <div class="text-danger small mt-1">{{ form.first_name.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="id_last_name" class="form-label fw-semibold">Last Name</label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                                <div class="text-danger small mt-1">{{ form.last_name.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_email" class="form-label fw-semibold">Email Address</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="text-danger small mt-1">{{ form.email.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="id_password" class="form-label fw-semibold">Password</label>
+                            {{ form.password }}
+                            {% if form.password.errors %}
+                                <div class="text-danger small mt-1">{{ form.password.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="id_confirm_password" class="form-label fw-semibold">Confirm Password</label>
+                            {{ form.confirm_password }}
+                            {% if form.confirm_password.errors %}
+                                <div class="text-danger small mt-1">{{ form.confirm_password.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 mt-1">
+                            <small class="text-muted" style="font-size: 0.75rem; display: block; line-height: 1.3;">
+                                Password must be at least 8 characters and contain at least one uppercase letter, one digit, and one special character.
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold d-block">Register As</label>
+                        <div class="d-flex gap-4">
+                            <div class="form-check">
+                                {{ form.is_candidate }}
+                                <label class="form-check-label" for="id_is_candidate">
+                                    Candidate (Job Seeker)
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                {{ form.is_employer }}
+                                <label class="form-check-label" for="id_is_employer">
+                                    Employer (Recruiter)
+                                </label>
+                            </div>
+                        </div>
+                        {% if form.is_candidate.errors or form.is_employer.errors %}
+                            <div class="text-danger small mt-1">
+                                {% if form.is_candidate.errors %}{{ form.is_candidate.errors|join:", " }}{% else %}{{ form.is_employer.errors|join:", " }}{% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 py-2 rounded-pill shadow-sm">
+                        Create Account
+                    </button>
+                </form>
+                
+                <div class="text-center mt-4">
+                    <p class="text-secondary small mb-0">Already have an account? 
+                        <a href="{% url 'login' %}" class="fw-semibold text-primary text-decoration-none">Log in here</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
